@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "912787228925",
+    "project_id": "erasmusmoneymanager",
+    "storage_bucket": "erasmusmoneymanager.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:912787228925:android:9c911bb36acca4ef5a9694",
+        "android_client_info": {
+          "package_name": "com.example.erasmusmoneymanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEn9nAK1BN5HEI44d2njtFRWDBD3feq98"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
