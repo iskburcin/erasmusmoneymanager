@@ -20,7 +20,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
     } else {
       balance = balance! + amount;
     }
-    userData.calculateSpendableAmounts();
+    userData.calculateSpendableamount;
   }
 
   @override

@@ -154,27 +154,32 @@ class _ProfilePageState extends State<ProfilePage> {
         Row(
           children: [
             Expanded(
-              child: ProfileDetailRow(
-                  label: "Başlangıç",
-                  value: user?['ErasmusStartDate'].substring(0, 10)),
+              child: Column(
+                children: [
+                  ProfileDetailRow(
+                      label: "Başlangıç",
+                      value: user?['ErasmusStartDate'].substring(0, 10)),
+                  ProfileDetailRow(
+                      label: "Toplam Gün Süresi'",
+                      value: user?['ErasmusTotalDuration'].toString()),
+                ],
+              ),
             ),
-            Divider(
-              indent: 20,
-              thickness: 2,
-            ),
+            VerticalDivider(thickness: 2,),
             Expanded(
-              child: ProfileDetailRow(
-                  label: "Bitiş",
-                  value: user?['ErasmusEndDate'].substring(0, 10)),
+              child: Column(
+                children: [
+                  ProfileDetailRow(
+                      label: "Bitiş",
+                      value: user?['ErasmusEndDate'].substring(0, 10)),
+                  ProfileDetailRow(
+                      label: "Kalan Gün Süresi'",
+                      value: user?['ErasmusRemainingDuration'].toString()),
+                ],
+              ),
             ),
           ],
         ),
-        ProfileDetailRow(
-            label: "Toplam Gün Süresi'",
-            value: user?['ErasmusTotalDuration'].toString()),
-        ProfileDetailRow(
-            label: "Kalan Gün Süresi'",
-            value: user?['ErasmusRemainingDuration'].toString()),
         Divider(),
         ProfileDetailRow(
             label: "Current EUR Amount",
