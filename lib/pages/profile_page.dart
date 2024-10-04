@@ -86,7 +86,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           if (!isEditing)
             IconButton(
@@ -98,6 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
             )
         ],
       ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         future: getUserDetails(),
         builder: (context, snapshot) {
@@ -165,7 +166,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            VerticalDivider(thickness: 2,),
+            VerticalDivider(
+              thickness: 2,
+            ),
             Expanded(
               child: Column(
                 children: [

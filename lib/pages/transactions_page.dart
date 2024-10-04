@@ -14,65 +14,72 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
   void addTransaction(UserData userData) {
     final amount = double.parse(amountController.text);
-    double? balance = userData.balances[selectedCurrency];
+    double? balance = userData.accountBalances[selectedCurrency];
     if (isExpense) {
       balance = balance! - amount;
     } else {
       balance = balance! + amount;
     }
-    userData.calculateSpendableamount;
+    userData.calculateSpendableAmount;
   }
 
   @override
   Widget build(BuildContext context) {
     final userData = Provider.of<UserData>(context);
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text('Transactions'),
       ),
-      body: Column(
-        children: [
-          DropdownButton<String>(
-            value: selectedCurrency,
-            items: ['eur', 'try', 'pln'].map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value.toUpperCase()),
-              );
-            }).toList(),
-            onChanged: (newValue) {
-              setState(() {
-                selectedCurrency = newValue!;
-              });
-            },
-          ),
-          TextField(
-            controller: amountController,
-            decoration: InputDecoration(labelText: 'Amount'),
-            keyboardType: TextInputType.number,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Expense'),
-              Switch(
-                value: isExpense,
-                onChanged: (value) {
-                  setState(() {
-                    isExpense = value;
-                  });
-                },
-              ),
-              Text('Income'),
-            ],
-          ),
-          ElevatedButton(
-            onPressed: () {
-              addTransaction(userData);
-            },
-            child: Text('Submit Transaction'),
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            DropdownButton<String>(
+              value: selectedCurrency,
+              items: ['eur', 'try', 'pln'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value.toUpperCase()),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedCurrency = newValue!;
+                });
+              },
+            ),
+            TextField(
+              controller: amountController,
+              decoration: InputDecoration(
+                  hintText: 'Kaç para?',
+                  hintStyle: TextStyle(color: Colors.grey[600])),
+              keyboardType: TextInputType.number,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Gider'),
+                Switch(
+                  value: isExpense,
+                  onChanged: (value) {
+                    setState(() {
+                      isExpense = value;
+                    });
+                  },
+                ),
+                Text('Gelir'),
+              ],
+            ),
+            ElevatedButton(
+              style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.black26)),
+              onPressed: () {
+                addTransaction(userData);
+              },
+              child: Text('Submit Transaction'),
+            ),
+          ],
+        ),
       ),
     );
   }
