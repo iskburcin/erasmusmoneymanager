@@ -33,16 +33,12 @@ class _ProfilePageState extends State<ProfilePage> {
   int? remainedDuration;
 
   void enableEditing(Map<String, dynamic>? user) {
-    DateTime end = DateFormat('yyyy-MM-dd').parse(user?['ErasmusEndDate']);
-    DateTime start = DateFormat('yyyy-MM-dd').parse(user?['ErasmusEndDate']);
     setState(() {
       isEditing = true;
       nameController.text = user?['Name'] ?? '';
       surnameController.text = user?['Surname'] ?? '';
       erasmusStartDate = user?['ErasmusStartDate'] ?? '';
       erasmusEndDate = user?['ErasmusEndDate'] ?? '';
-      duration = end.difference(start).inDays;
-      remainedDuration = end.difference(DateTime.now()).inDays;
     });
     print(duration);
   }
@@ -57,15 +53,6 @@ class _ProfilePageState extends State<ProfilePage> {
         'Surname': surnameController.text,
         'ErasmusStartDate': erasmusStartDate,
         'ErasmusEndDate': erasmusEndDate,
-        'ErasmusTotalDuration': DateFormat('yyyy-MM-dd')
-            .parse(erasmusEndDate.toString())
-            .difference(
-                DateFormat('yyyy-MM-dd').parse(erasmusStartDate.toString()))
-            .inDays,
-        'ErasmusRemainingDuration': DateFormat('yyyy-MM-dd')
-            .parse(erasmusEndDate.toString())
-            .difference(DateTime.now())
-            .inDays,
       });
       setState(() {
         isEditing = false;
@@ -85,8 +72,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: const Text('Profilim'),
+        backgroundColor: Colors.black,
         actions: [
           if (!isEditing)
             IconButton(
@@ -98,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> {
             )
         ],
       ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.black,
       body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         future: getUserDetails(),
         builder: (context, snapshot) {
@@ -123,6 +110,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget buildProfileView(BuildContext context, Map<String, dynamic>? user) {
+    DateTime end = DateFormat('yyyy-MM-dd').parse(user?['ErasmusEndDate']);
+    DateTime start = DateFormat('yyyy-MM-dd').parse(user?['ErasmusStartDate']);
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -162,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       value: user?['ErasmusStartDate'].substring(0, 10)),
                   ProfileDetailRow(
                       label: "Toplam Gün Süresi'",
-                      value: user?['ErasmusTotalDuration'].toString()),
+                      value: (end.difference(start).inDays).toString()),
                 ],
               ),
             ),
@@ -177,7 +166,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       value: user?['ErasmusEndDate'].substring(0, 10)),
                   ProfileDetailRow(
                       label: "Kalan Gün Süresi'",
-                      value: user?['ErasmusRemainingDuration'].toString()),
+                      value:
+                          (end.difference(DateTime.now()).inDays).toString()),
                 ],
               ),
             ),
@@ -185,13 +175,13 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         Divider(),
         ProfileDetailRow(
-            label: "Current EUR Amount",
+            label: "Mevcut EUR Hesap Bakiyem",
             numvalue: user?['InitialBalance']['EUR']),
         ProfileDetailRow(
-            label: "Current PLN Amount",
+            label: "Mevcut PLN Hesap Bakiyem",
             numvalue: user?['InitialBalance']['PLN']),
         ProfileDetailRow(
-            label: "Current TRY Amount",
+            label: "Mevcut TRY Hesap Bakiyem",
             numvalue: user?['InitialBalance']['TRY']),
       ],
     );

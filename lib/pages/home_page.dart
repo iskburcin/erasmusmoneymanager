@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_data.dart';
+import '../system/exchange_rate_services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,6 +20,20 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadUserData();
+    ExchangeRateService
+        .updateRatesEvery1HourAnd10Min(); // Start periodic rate updates
+    updateLastUpdatedDate(); // Fetch the last updated date
+  }
+
+  Future<void> updateLastUpdatedDate() async {
+    String? dateEURTRY =
+        await ExchangeRateService.getRateFetchDate('EUR', 'TRY');
+    if (dateEURTRY != null) {
+      setState(() {
+        lastUpdated =
+            dateEURTRY; // Show the last updated date for EUR-TRY rates
+      });
+    }
   }
 
   Future<void> loadUserData() async {
@@ -28,9 +43,7 @@ class _HomePageState extends State<HomePage> {
     await userData.calculateTotalBalances(selectedCurrency);
     await userData.calculateSpendableAmount(selectedCurrency);
     if (mounted) {
-      setState(() {
-        lastUpdated = DateTime.now().toLocal().toString(); // Set update time
-      });
+      updateLastUpdatedDate(); // Also update the last updated date after fetching user data
     }
   }
 
@@ -106,9 +119,9 @@ class _HomePageState extends State<HomePage> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      buildTotalBalanceCard(userData.totalBalanceInEUR, 'EUR'),
-                      buildTotalBalanceCard(userData.totalBalanceInTRY, 'TRY'),
-                      buildTotalBalanceCard(userData.totalBalanceInPLN, 'PLN'),
+                      buildTotalBalanceCard(userData.totalBalances['EUR']!, 'EUR'),
+                      buildTotalBalanceCard(userData.totalBalances['TRY']!, 'TRY'),
+                      buildTotalBalanceCard(userData.totalBalances['PLN']!, 'PLN'),
                     ],
                   ),
                 ),

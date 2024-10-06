@@ -27,9 +27,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
   Widget build(BuildContext context) {
     final userData = Provider.of<UserData>(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text('Transactions'),
+        backgroundColor: Colors.black,
+        title: Text('Transactions         I Ş L E M L E R I M'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -72,11 +73,12 @@ class _TransactionsPageState extends State<TransactionsPage> {
               ],
             ),
             ElevatedButton(
-              style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.black26)),
+              style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(Colors.grey[800])),
               onPressed: () {
                 addTransaction(userData);
               },
-              child: Text('Submit Transaction'),
+              child: Text('Işlemi Gönder',style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
             ),
           ],
         ),
