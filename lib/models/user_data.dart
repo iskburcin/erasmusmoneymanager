@@ -66,14 +66,10 @@ class UserData extends ChangeNotifier {
     dailySpendable = totalBalance! / remainingDays;
     weeklySpendable = totalBalance / (remainingDays / 7);
     monthlySpendable = totalBalance / (remainingDays / 30);
-    // Save the calculated spendable amounts to Firestore
     // Store in local storage
     await prefs.setDouble('dailySpendable-$currency', dailySpendable);
     await prefs.setDouble('weeklySpendable-$currency', weeklySpendable);
     await prefs.setDouble('monthlySpendable-$currency', monthlySpendable);
-    print('dailySpendable-$currency: $dailySpendable');
-    print('weeklySpendable-$currency: $weeklySpendable');
-    print('monthlySpendable-$currency: $monthlySpendable');
     notifyListeners();
   }
 
@@ -108,12 +104,12 @@ class UserData extends ChangeNotifier {
     await fetchUserDetails(); // Ensure balances are loaded
 
     // Fetch conversion rates
-    double tryToEur = await ExchangeRateService.showRates('TRY', 'EUR') ?? 0.0;
-    double plnToEur = await ExchangeRateService.showRates('PLN', 'EUR') ?? 0.0;
-    double eurToTry = await ExchangeRateService.showRates('EUR', 'TRY') ?? 0.0;
-    double plnToTry = await ExchangeRateService.showRates('PLN', 'TRY') ?? 0.0;
-    double eurToPln = await ExchangeRateService.showRates('EUR', 'PLN') ?? 0.0;
-    double tryToPln = await ExchangeRateService.showRates('TRY', 'PLN') ?? 0.0;
+    double tryToEur = await ExchangeRateService.getRateFromCache('TRY', 'EUR') ?? 0.0;
+    double plnToEur = await ExchangeRateService.getRateFromCache('PLN', 'EUR') ?? 0.0;
+    double eurToTry = await ExchangeRateService.getRateFromCache('EUR', 'TRY') ?? 0.0;
+    double plnToTry = await ExchangeRateService.getRateFromCache('PLN', 'TRY') ?? 0.0;
+    double eurToPln = await ExchangeRateService.getRateFromCache('EUR', 'PLN') ?? 0.0;
+    double tryToPln = await ExchangeRateService.getRateFromCache('TRY', 'PLN') ?? 0.0;
 
     // Calculate total balances in EUR, TRY, and PLN
     totalBalances['EUR'] = accountBalances['EUR']! +

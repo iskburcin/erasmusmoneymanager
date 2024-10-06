@@ -20,16 +20,16 @@ class ExchangeRateService {
     }
   }
 
-  static Future<double?> showRates(String from, String to) async {
-    double? rate = await fetchExchangeRates(from, to);
-    return rate ?? 0.0;
-  }
+  // static Future<double?> showRates(String from, String to) async {
+  //   double? rate = await fetchExchangeRates(from, to);
+  //   return rate ?? 0.0;
+  // }
 
-  static Future<void> updateRatesEvery1HourAnd10Min() async {
-    Timer.periodic(const Duration(hours: 1, minutes: 10), (timer) async {
-      await updateExchangeRates();
-    });
-  }
+  // static Future<void> updateRatesEvery1HourAnd10Min() async {
+  //   Timer.periodic(const Duration(hours: 1, minutes: 10), (timer) async {
+  //     await updateExchangeRates();
+  //   });
+  // }
 
   static Future<void> updateExchangeRates() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
