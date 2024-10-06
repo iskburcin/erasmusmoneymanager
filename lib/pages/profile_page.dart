@@ -137,7 +137,7 @@ class _ProfilePageState extends State<ProfilePage> {
         const SizedBox(height: 5),
         Divider(color: Theme.of(context).colorScheme.onSurface, thickness: 1),
         const SizedBox(height: 5),
-        Text(
+        const Text(
           "Erasmus:",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),

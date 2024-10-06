@@ -30,31 +30,49 @@ class UserData extends ChangeNotifier {
   }
 
   Future<void> fetchUserDetails() async {
-    if (currentUser == null) return;
-    final doc = await getUserDetails();
-    if (doc.exists) {
-      final userData = doc.data();
-      accountBalances = {
-        'EUR': double.parse((userData?['InitialBalance']['EUR']).toString()),
-        'TRY': double.parse((userData?['InitialBalance']['TRY']).toString()),
-        'PLN': double.parse((userData?['InitialBalance']['PLN']).toString()),
-      };
-      totalBalances = {
-        'EUR': double.parse((userData?['totalBalances']['EUR']).toString()),
-        'TRY': double.parse((userData?['totalBalances']['TRY']).toString()),
-        'PLN': double.parse((userData?['totalBalances']['PLN']).toString()),
-      };
-      // Calculate the remaining Erasmus days
-      DateTime endDate = DateTime.parse(userData?['ErasmusEndDate']);
-      remainingDays = endDate.difference(DateTime.now()).inDays;
+  if (currentUser == null) return;
+  final doc = await getUserDetails();
+  
+  if (doc.exists) {
+    final userData = doc.data();
 
-      // If the Erasmus period has ended, set remainingDays to 0
-      if (remainingDays < 0) {
-        remainingDays = 0;
-      }
-      notifyListeners();
+    accountBalances = {
+      'EUR': userData?['InitialBalance'] != null
+          ? double.tryParse((userData?['InitialBalance']['EUR']).toString()) ?? 0.0
+          : 0.0,
+      'TRY': userData?['InitialBalance'] != null
+          ? double.tryParse((userData?['InitialBalance']['TRY']).toString()) ?? 0.0
+          : 0.0,
+      'PLN': userData?['InitialBalance'] != null
+          ? double.tryParse((userData?['InitialBalance']['PLN']).toString()) ?? 0.0
+          : 0.0,
+    };
+
+    totalBalances = {
+      'EUR': userData?['totalBalances'] != null
+          ? double.tryParse((userData?['totalBalances']['EUR']).toString()) ?? 0.0
+          : 0.0,
+      'TRY': userData?['totalBalances'] != null
+          ? double.tryParse((userData?['totalBalances']['TRY']).toString()) ?? 0.0
+          : 0.0,
+      'PLN': userData?['totalBalances'] != null
+          ? double.tryParse((userData?['totalBalances']['PLN']).toString()) ?? 0.0
+          : 0.0,
+    };
+
+    // Calculate the remaining Erasmus days
+    DateTime endDate = DateTime.parse(userData?['ErasmusEndDate']);
+    remainingDays = endDate.difference(DateTime.now()).inDays;
+
+    // If the Erasmus period has ended, set remainingDays to 0
+    if (remainingDays < 0) {
+      remainingDays = 0;
     }
+
+    notifyListeners();
   }
+}
+
 
   calculateSpendableAmount(String currency) async {
     await fetchUserDetails();

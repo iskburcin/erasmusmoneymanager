@@ -20,41 +20,35 @@ class ExchangeRateService {
     }
   }
 
-  // static Future<double?> showRates(String from, String to) async {
-  //   double? rate = await fetchExchangeRates(from, to);
-  //   return rate ?? 0.0;
-  // }
+static Future<void> updateExchangeRates() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String> currencies = ["EUR", "TRY", "PLN"];
 
-  // static Future<void> updateRatesEvery1HourAnd10Min() async {
-  //   Timer.periodic(const Duration(hours: 1, minutes: 10), (timer) async {
-  //     await updateExchangeRates();
-  //   });
-  // }
+  for (int u = 0; u < currencies.length; u++) {
+    for (int v = u + 1; v < currencies.length; v++) {
+      // Sadece tek bir istek yap (örn. EUR-TRY)
+      double? rate = await fetchExchangeRates(currencies[u], currencies[v]);
 
-  static Future<void> updateExchangeRates() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> currencies = ["EUR", "TRY", "PLN"];
+      if (rate != null) {
+        String key1 = "${currencies[u]}-${currencies[v]}-rate";
+        String key2 = "${currencies[v]}-${currencies[u]}-rate";
 
-    for (int u = 0; u < currencies.length; u++) {
-      for (int v = u + 1; v < currencies.length; v++) {
-        double? rate1 = await fetchExchangeRates(currencies[u], currencies[v]);
-        double? rate2 = await fetchExchangeRates(currencies[v], currencies[u]);
+        // İki yönlü oranları hesapla ve kaydet
+        prefs.setDouble(key1, rate);
+        prefs.setDouble(key2, 1 / rate); // Ters oran
 
-        if (rate1 != null && rate2 != null) {
-          String key1 = "${currencies[u]}-${currencies[v]}-rate";
-          String key2 = "${currencies[v]}-${currencies[u]}-rate";
-          prefs.setDouble(key1, rate1);
-          prefs.setDouble(key2, rate2);
-          prefs.setString("$key1-date", DateTime.now().toString());
-          prefs.setString("$key2-date", DateTime.now().toString());
+        // Oranların güncellenme tarihini kaydet
+        String currentDate = DateTime.now().toString();
+        prefs.setString("$key1-date", currentDate);
+        prefs.setString("$key2-date", currentDate);
 
-          // Log rate updates
-          print("${currencies[u]}-${currencies[v]} rate: $rate1");
-          print("${currencies[v]}-${currencies[u]} rate: $rate2");
-        }
+        // Log işlemi
+        print("${currencies[u]}-${currencies[v]} rate: $rate");
+        print("${currencies[v]}-${currencies[u]} rate: ${1 / rate}");
       }
     }
   }
+}
 
   static Future<double?> getRateFromCache(String base, String currency) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

@@ -76,11 +76,14 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> updateExchangeRates() async {
     await ExchangeRateService.updateExchangeRates();
-    setState(() {
-      lastUpdated = DateTime.now().toString();
-      nextUpdate =
-          DateTime.now().add(const Duration(hours: 1, minutes: 10)).toString();
-    });
+    if (mounted) {
+      setState(() {
+        lastUpdated = DateTime.now().toString();
+        nextUpdate = DateTime.now()
+            .add(const Duration(hours: 1, minutes: 10))
+            .toString();
+      });
+    }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('lastUpdateTime', DateTime.now().toString());
   }
@@ -135,11 +138,11 @@ class _HomePageState extends State<HomePage> {
                     child: Row(
                       children: [
                         buildBalanceCard(
-                            userData.accountBalances["EUR"]!,'EUR'),
+                            userData.accountBalances["EUR"]!, 'EUR'),
                         buildBalanceCard(
-                            userData.accountBalances["TRY"]!,'TRY'),
+                            userData.accountBalances["TRY"]!, 'TRY'),
                         buildBalanceCard(
-                            userData.accountBalances["PLN"]!,'PLN'),
+                            userData.accountBalances["PLN"]!, 'PLN'),
                       ],
                     ),
                   ),
@@ -158,15 +161,14 @@ class _HomePageState extends State<HomePage> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        buildBalanceCard(
-                            userData.totalBalances['EUR']!, 'EUR'),
-                        buildBalanceCard(
-                            userData.totalBalances['TRY']!, 'TRY'),
-                        buildBalanceCard(
-                            userData.totalBalances['PLN']!, 'PLN'),
+                        buildBalanceCard(userData.totalBalances['EUR']!, 'EUR'),
+                        buildBalanceCard(userData.totalBalances['TRY']!, 'TRY'),
+                        buildBalanceCard(userData.totalBalances['PLN']!, 'PLN'),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  buildSpendableCards(userData),
                   const SizedBox(height: 16),
                   const Text(
                     "Döviz Kurları",
@@ -176,8 +178,6 @@ class _HomePageState extends State<HomePage> {
                     height: 16,
                   ),
                   buildExchangeRateGrid(),
-                  const SizedBox(height: 16),
-                  buildSpendableCards(userData),
                 ],
               ),
             ),
@@ -200,8 +200,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  // Card for individual account balance
 
   // Exchange rate grid
   Widget buildExchangeRateGrid() {
