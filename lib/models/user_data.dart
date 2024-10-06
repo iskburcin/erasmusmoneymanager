@@ -6,14 +6,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../system/exchange_rate_services.dart';
 
 class UserData extends ChangeNotifier {
-  late double dailySpendable= 0.0;
-  late double weeklySpendable= 0.0;
-  late double monthlySpendable= 0.0;
-  late double totalBalanceInEUR = 0.0;
-  late double totalBalanceInTRY = 0.0;
-  late double totalBalanceInPLN = 0.0;
+  late double dailySpendable = 0.0;
+  late double weeklySpendable = 0.0;
+  late double monthlySpendable = 0.0;
+  int remainingDays = 0; // Store calculated remaining days
   final User? currentUser = FirebaseAuth.instance.currentUser;
   Map<String, double> accountBalances = {
+    'EUR': 0.0,
+    'TRY': 0.0,
+    'PLN': 0.0,
+  };
+  Map<String, double> totalBalances = {
     'EUR': 0.0,
     'TRY': 0.0,
     'PLN': 0.0,
@@ -32,28 +35,35 @@ class UserData extends ChangeNotifier {
     if (doc.exists) {
       final userData = doc.data();
       accountBalances = {
-        'EUR': userData?['InitialBalance']['EUR'],
-        'TRY': userData?['InitialBalance']['TRY'],
-        'PLN': userData?['InitialBalance']['PLN'],
+        'EUR': double.parse((userData?['InitialBalance']['EUR']).toString()),
+        'TRY': double.parse((userData?['InitialBalance']['TRY']).toString()),
+        'PLN': double.parse((userData?['InitialBalance']['PLN']).toString()),
       };
-      totalBalanceInEUR = userData?['totalBalanceEUR'] ?? 0.0;
-      totalBalanceInTRY = userData?['totalBalanceTRY'] ?? 0.0;
-      totalBalanceInPLN = userData?['totalBalancePLN'] ?? 0.0;
+      totalBalances = {
+        'EUR': double.parse((userData?['totalBalances']['EUR']).toString()),
+        'TRY': double.parse((userData?['totalBalances']['TRY']).toString()),
+        'PLN': double.parse((userData?['totalBalances']['PLN']).toString()),
+      };
+      // Calculate the remaining Erasmus days
+      DateTime endDate = DateTime.parse(userData?['ErasmusEndDate']);
+      remainingDays = endDate.difference(DateTime.now()).inDays;
+
+      // If the Erasmus period has ended, set remainingDays to 0
+      if (remainingDays < 0) {
+        remainingDays = 0;
+      }
       notifyListeners();
     }
   }
 
   calculateSpendableAmount(String currency) async {
     await fetchUserDetails();
-    final user = await getUserDetails();
-    Map<String, dynamic>? userDoc = user.data();
-    int remainingDays = userDoc?['ErasmusRemainingDuration'];
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    double totalBalance = 0.0;
-    if (currency == 'EUR') totalBalance = totalBalanceInEUR;
-    if (currency == 'TRY') totalBalance = totalBalanceInTRY;
-    if (currency == 'PLN') totalBalance = totalBalanceInPLN;
-    dailySpendable = totalBalance / remainingDays;
+    double? totalBalance = 0.0;
+    if (currency == 'EUR') totalBalance = totalBalances['EUR'];
+    if (currency == 'TRY') totalBalance = totalBalances['TRY'];
+    if (currency == 'PLN') totalBalance = totalBalances['PLN'];
+    dailySpendable = totalBalance! / remainingDays;
     weeklySpendable = totalBalance / (remainingDays / 7);
     monthlySpendable = totalBalance / (remainingDays / 30);
     // Save the calculated spendable amounts to Firestore
@@ -75,7 +85,7 @@ class UserData extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveBalancesToFirebase() async {
+  Future<void> saveCalculatedValuesToFirestore() async {
     if (currentUser == null) return;
     await FirebaseFirestore.instance
         .collection("Users")
@@ -86,17 +96,11 @@ class UserData extends ChangeNotifier {
         'TRY': accountBalances['TRY'],
         'PLN': accountBalances['PLN'],
       },
-    });
-  }
-
-  Future<void> saveCalculatedValuesToFirestore() async {
-    await FirebaseFirestore.instance
-        .collection("Users")
-        .doc(currentUser!.email)
-        .update({
-      'totalBalanceEUR': totalBalanceInEUR,
-      'totalBalanceTRY': totalBalanceInTRY,
-      'totalBalancePLN': totalBalanceInPLN,
+      'totalBalances': {
+        'EUR': totalBalances['EUR'],
+        'TRY': totalBalances['TRY'],
+        'PLN': totalBalances['PLN'],
+      },
     });
   }
 
@@ -112,18 +116,17 @@ class UserData extends ChangeNotifier {
     double tryToPln = await ExchangeRateService.showRates('TRY', 'PLN') ?? 0.0;
 
     // Calculate total balances in EUR, TRY, and PLN
-    totalBalanceInEUR = accountBalances['EUR']! +
+    totalBalances['EUR'] = accountBalances['EUR']! +
         (accountBalances['TRY']! * tryToEur) +
         (accountBalances['PLN']! * plnToEur);
-    totalBalanceInTRY = accountBalances['TRY']! +
+    totalBalances['TRY'] = accountBalances['TRY']! +
         (accountBalances['EUR']! * eurToTry) +
         (accountBalances['PLN']! * plnToTry);
-    totalBalanceInPLN = accountBalances['PLN']! +
+    totalBalances['PLN'] = accountBalances['PLN']! +
         (accountBalances['EUR']! * eurToPln) +
         (accountBalances['TRY']! * tryToPln);
     calculateSpendableAmount(currency);
     await saveCalculatedValuesToFirestore();
     notifyListeners();
   }
-
 }
