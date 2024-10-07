@@ -25,7 +25,7 @@ class ProfileDetailRow extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              (value ?? '${datevalue??numvalue}'),
+              (value ?? '${datevalue??numvalue!.toStringAsFixed(2)}'),
               style: const TextStyle(fontSize: 16),
               textAlign: TextAlign.end,
             ),

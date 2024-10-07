@@ -10,7 +10,7 @@ class UserData extends ChangeNotifier {
   late double weeklySpendable = 0.0;
   late double monthlySpendable = 0.0;
   int remainingDays = 0; // Store calculated remaining days
-  final User? currentUser = FirebaseAuth.instance.currentUser;
+  User? currentUser = FirebaseAuth.instance.currentUser;
   Map<String, double> accountBalances = {
     'EUR': 0.0,
     'TRY': 0.0,
@@ -30,49 +30,57 @@ class UserData extends ChangeNotifier {
   }
 
   Future<void> fetchUserDetails() async {
-  if (currentUser == null) return;
-  final doc = await getUserDetails();
-  
-  if (doc.exists) {
-    final userData = doc.data();
+    if (currentUser == null) return;
+    final doc = await getUserDetails();
 
-    accountBalances = {
-      'EUR': userData?['InitialBalance'] != null
-          ? double.tryParse((userData?['InitialBalance']['EUR']).toString()) ?? 0.0
-          : 0.0,
-      'TRY': userData?['InitialBalance'] != null
-          ? double.tryParse((userData?['InitialBalance']['TRY']).toString()) ?? 0.0
-          : 0.0,
-      'PLN': userData?['InitialBalance'] != null
-          ? double.tryParse((userData?['InitialBalance']['PLN']).toString()) ?? 0.0
-          : 0.0,
-    };
+    if (doc.exists) {
+      final userData = doc.data();
 
-    totalBalances = {
-      'EUR': userData?['totalBalances'] != null
-          ? double.tryParse((userData?['totalBalances']['EUR']).toString()) ?? 0.0
-          : 0.0,
-      'TRY': userData?['totalBalances'] != null
-          ? double.tryParse((userData?['totalBalances']['TRY']).toString()) ?? 0.0
-          : 0.0,
-      'PLN': userData?['totalBalances'] != null
-          ? double.tryParse((userData?['totalBalances']['PLN']).toString()) ?? 0.0
-          : 0.0,
-    };
+      accountBalances = {
+        'EUR': userData?['InitialBalance'] != null
+            ? double.tryParse(
+                    (userData?['InitialBalance']['EUR']).toString()) ??
+                0.0
+            : 0.0,
+        'TRY': userData?['InitialBalance'] != null
+            ? double.tryParse(
+                    (userData?['InitialBalance']['TRY']).toString()) ??
+                0.0
+            : 0.0,
+        'PLN': userData?['InitialBalance'] != null
+            ? double.tryParse(
+                    (userData?['InitialBalance']['PLN']).toString()) ??
+                0.0
+            : 0.0,
+      };
 
-    // Calculate the remaining Erasmus days
-    DateTime endDate = DateTime.parse(userData?['ErasmusEndDate']);
-    remainingDays = endDate.difference(DateTime.now()).inDays;
+      totalBalances = {
+        'EUR': userData?['totalBalances'] != null
+            ? double.tryParse((userData?['totalBalances']['EUR']).toString()) ??
+                0.0
+            : 0.0,
+        'TRY': userData?['totalBalances'] != null
+            ? double.tryParse((userData?['totalBalances']['TRY']).toString()) ??
+                0.0
+            : 0.0,
+        'PLN': userData?['totalBalances'] != null
+            ? double.tryParse((userData?['totalBalances']['PLN']).toString()) ??
+                0.0
+            : 0.0,
+      };
 
-    // If the Erasmus period has ended, set remainingDays to 0
-    if (remainingDays < 0) {
-      remainingDays = 0;
+      // Calculate the remaining Erasmus days
+      DateTime endDate = DateTime.parse(userData?['ErasmusEndDate']);
+      remainingDays = endDate.difference(DateTime.now()).inDays;
+
+      // If the Erasmus period has ended, set remainingDays to 0
+      if (remainingDays < 0) {
+        remainingDays = 0;
+      }
+
+      notifyListeners();
     }
-
-    notifyListeners();
   }
-}
-
 
   calculateSpendableAmount(String currency) async {
     await fetchUserDetails();
@@ -122,12 +130,18 @@ class UserData extends ChangeNotifier {
     await fetchUserDetails(); // Ensure balances are loaded
 
     // Fetch conversion rates
-    double tryToEur = await ExchangeRateService.getRateFromCache('TRY', 'EUR') ?? 0.0;
-    double plnToEur = await ExchangeRateService.getRateFromCache('PLN', 'EUR') ?? 0.0;
-    double eurToTry = await ExchangeRateService.getRateFromCache('EUR', 'TRY') ?? 0.0;
-    double plnToTry = await ExchangeRateService.getRateFromCache('PLN', 'TRY') ?? 0.0;
-    double eurToPln = await ExchangeRateService.getRateFromCache('EUR', 'PLN') ?? 0.0;
-    double tryToPln = await ExchangeRateService.getRateFromCache('TRY', 'PLN') ?? 0.0;
+    double tryToEur =
+        await ExchangeRateService.getRateFromCache('TRY', 'EUR') ?? 0.0;
+    double plnToEur =
+        await ExchangeRateService.getRateFromCache('PLN', 'EUR') ?? 0.0;
+    double eurToTry =
+        await ExchangeRateService.getRateFromCache('EUR', 'TRY') ?? 0.0;
+    double plnToTry =
+        await ExchangeRateService.getRateFromCache('PLN', 'TRY') ?? 0.0;
+    double eurToPln =
+        await ExchangeRateService.getRateFromCache('EUR', 'PLN') ?? 0.0;
+    double tryToPln =
+        await ExchangeRateService.getRateFromCache('TRY', 'PLN') ?? 0.0;
 
     // Calculate total balances in EUR, TRY, and PLN
     totalBalances['EUR'] = accountBalances['EUR']! +
@@ -142,5 +156,42 @@ class UserData extends ChangeNotifier {
     calculateSpendableAmount(currency);
     await saveCalculatedValuesToFirestore();
     notifyListeners();
+  }
+
+  void clearData() async {
+    dailySpendable = 0.0;
+    weeklySpendable = 0.0;
+    monthlySpendable = 0.0;
+    remainingDays = 0;
+
+    accountBalances = {
+      'EUR': 0.0,
+      'TRY': 0.0,
+      'PLN': 0.0,
+    };
+
+    totalBalances = {
+      'EUR': 0.0,
+      'TRY': 0.0,
+      'PLN': 0.0,
+    };
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Tüm SharedPreferences verilerini temizliyoruz
+
+    notifyListeners();
+  }
+
+  void listenToAuthChanges() {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        // Kullanıcı çıkış yapmışsa, verileri temizle
+        clearData();
+      } else {
+        // Yeni bir kullanıcı giriş yaptıysa, currentUser'ı güncelle
+        currentUser = user;
+        fetchUserDetails();
+      }
+    });
   }
 }

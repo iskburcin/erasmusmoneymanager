@@ -83,19 +83,18 @@ void addTransaction(UserData userData) async {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Transactions         I Ş L E M L E R I M'),
+        title: const Text('Transactions        I Ş L E M L E R I M'),
       ),
-      body: Expanded(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
                       DropdownButton<String>(
                         value: selectedCurrency.isNotEmpty &&
                                 ['EUR', 'TRY', 'PLN'].contains(selectedCurrency)
@@ -160,6 +159,7 @@ void addTransaction(UserData userData) async {
                                         'Giyim',
                                         'Yemek',
                                         'Ulaşım',
+                                        'Döviz Bozdurma',
                                         'Konaklama',
                                         'Other'
                                       ].map((String value) {
@@ -208,6 +208,7 @@ void addTransaction(UserData userData) async {
                                         'Hibe',
                                         'İş',
                                         'İşbank',
+                                        'Döviz Tamlama',
                                         'Alınan Borç',
                                         'Other'
                                       ].map((String value) {
@@ -339,7 +340,7 @@ void addTransaction(UserData userData) async {
                   ),
           ],
         ),
-      ),
+
     );
   }
 }

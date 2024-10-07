@@ -1,3 +1,5 @@
+import 'package:erasmusmoneymanager/pages/home_page.dart';
+import 'package:erasmusmoneymanager/utils/bottom_navigation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -29,28 +31,42 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _title(),
-              const SizedBox(height: 25,),
+              const SizedBox(
+                height: 25,
+              ),
               _loginform(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text("Çifremi Unuttum",style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary
-                  ),
+                  Text(
+                    "Çifremi Unuttum",
+                    style: TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
-              const SizedBox(height: 10,),
-              MyBotton(text: "Giriş", onTap: login,),
-              const SizedBox(height: 10,),
+              const SizedBox(
+                height: 10,
+              ),
+              MyBotton(
+                text: "Giriş",
+                onTap: login,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Hesabın yok mu?",
-                  style: TextStyle(color: Theme.of(context).colorScheme.inversePrimary),),
+                  Text(
+                    "Hesabın yok mu?",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                   GestureDetector(
-                    onTap: widget.onTap ,
-                    child: const Text("Kaydol", style: TextStyle(fontWeight: FontWeight.bold),))
+                      onTap: widget.onTap,
+                      child: const Text(
+                        "Kaydol",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ))
                 ],
               ),
             ],
@@ -61,49 +77,59 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void login() async {
-    showDialog(context: context, builder:(context)=> const Center(
-      child: CircularProgressIndicator(),
-    ));
+    showDialog(
+        context: context,
+        builder: (context) => const Center(
+              child: CircularProgressIndicator(),
+            ));
 
-    try{
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text);
-      if(context.mounted) Navigator.pop(context);
-    } on FirebaseAuthException catch (e){
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text, password: passwordController.text);
+      if (mounted) {
+        Navigator.pop(context);
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => BottomNavigation()));
+      }
+    } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
-      displayMessageToUser(e.code,context);
+      displayMessageToUser(e.code, context);
     }
   }
 
-  Widget _title(){
+  Widget _title() {
     return const SizedBox(
-      child: Text("E R A S M U S \nM O N E Y\nM A N A G E R",
+        child: Text(
+      "E R A S M U S \nM O N E Y\nM A N A G E R",
       style: TextStyle(
         fontSize: 32,
         fontWeight: FontWeight.bold,
-        
-        ),
-      )
-    );
+      ),
+    ));
   }
 
-  Widget _loginform(){
-    return Column(children: [
+  Widget _loginform() {
+    return Column(
+      children: [
         MyTextfield(
-          hintText: "Mail Adresiniz",
+          labelText: "Mail Adresiniz",
           obscureText: false,
+          isNumber: false,
           controller: emailController,
         ),
-
-        const SizedBox(height: 10,),
-
+        const SizedBox(
+          height: 10,
+        ),
         MyTextfield(
-          hintText: "Şifreniz",
+          labelText: "Şifreniz",
+          isNumber: false,
           obscureText: true,
           controller: passwordController,
         ),
-        
-        const SizedBox(height: 10,),
-        ],
+        const SizedBox(
+          height: 10,
+        ),
+      ],
     );
   }
 }

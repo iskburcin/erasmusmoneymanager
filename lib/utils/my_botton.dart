@@ -15,7 +15,7 @@ class MyBotton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
+          color: Colors.blueGrey,
           borderRadius: BorderRadius.circular(12),
         ),
         height: 70,

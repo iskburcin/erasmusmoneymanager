@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';  // To format dates
+import 'package:intl/intl.dart'; // To format dates
 import '../system/helpers.dart';
+import '../utils/bottom_navigation.dart';
 import '../utils/my_botton.dart';
 import '../utils/my_textfields.dart';
 
@@ -23,12 +24,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController passwordConfirmController =
       TextEditingController();
-  
+
   // Erasmus duration fields
   DateTimeRange? selectedDateRange;
-  DateTime? erasmusStartDate;
-  DateTime? erasmusEndDate;
-  
+  String? erasmusStartDate;
+  String? erasmusEndDate;
+
   // Currency balance controllers
   final TextEditingController eurBalanceController = TextEditingController();
   final TextEditingController tryBalanceController = TextEditingController();
@@ -67,12 +68,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                 Theme.of(context).colorScheme.inversePrimary),
                       ),
                       GestureDetector(
-                        onTap: widget.onTap,
-                        child: const Text(
-                          "Giriş Yap",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      ),
+                          onTap: widget.onTap,
+                          child: const Text(
+                            "Giriş Yap",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          )),
                     ],
                   ),
                 ],
@@ -116,8 +116,11 @@ class _RegisterPageState extends State<RegisterPage> {
       // Store user data in Firestore
       await createUserDocument(userCredential);
 
-      // Close loading indicator
-      if (context.mounted) Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => BottomNavigation()));
+      }
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context); // Close loading indicator
       displayMessageToUser(e.code, context); // Show error
@@ -145,15 +148,17 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             Expanded(
               child: MyTextfield(
-                hintText: "Adınız",
+                labelText: "Adınız",
                 obscureText: false,
                 controller: nameController,
+                isNumber: false,
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: MyTextfield(
-                hintText: "Soyadınız",
+                isNumber: false,
+                labelText: "Soyadınız",
                 obscureText: false,
                 controller: surnameController,
               ),
@@ -164,7 +169,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
         // Email field
         MyTextfield(
-          hintText: "Mail Adresiniz",
+          labelText: "Mail Adresiniz",
+          isNumber: false,
           obscureText: false,
           controller: emailController,
         ),
@@ -172,13 +178,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
         // Password fields
         MyTextfield(
-          hintText: "Şifreniz",
+          labelText: "Şifreniz",
+          isNumber: false,
           obscureText: true,
           controller: passwordController,
         ),
         const SizedBox(height: 10),
         MyTextfield(
-          hintText: "Şifreni Doğrula",
+          labelText: "Şifreni Doğrula",
+          isNumber: false,
           obscureText: true,
           controller: passwordConfirmController,
         ),
@@ -189,9 +197,10 @@ class _RegisterPageState extends State<RegisterPage> {
           title: Text(selectedDateRange == null
               ? "Erasmus Süresi: Tarih Seçin"
               : "Erasmus Süresi: ${DateFormat('dd-MM-yyyy').format(selectedDateRange!.start)} - ${DateFormat('dd-MM-yyyy').format(selectedDateRange!.end)}"),
-          trailing: Icon(Icons.calendar_today),
+          trailing: const Icon(Icons.calendar_today),
           onTap: () async {
             DateTimeRange? picked = await showDateRangePicker(
+              barrierColor: Colors.red,
               context: context,
               firstDate: DateTime(2020),
               lastDate: DateTime(2050),
@@ -199,8 +208,9 @@ class _RegisterPageState extends State<RegisterPage> {
             if (picked != null) {
               setState(() {
                 selectedDateRange = picked;
-                erasmusStartDate = picked.start;
-                erasmusEndDate = picked.end;
+                erasmusStartDate =
+                    DateFormat('yyyy-MM-dd').format(picked.start);
+                erasmusEndDate = DateFormat('yyyy-MM-dd').format(picked.end);
               });
             }
           },
@@ -209,19 +219,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
         // Initial balance input fields
         MyTextfield(
-          hintText: "Başlangıç Bakiyesi (EUR)",
+          labelText: "Başlangıç Bakiyesi (EUR)",
           obscureText: false,
           controller: eurBalanceController,
+          isNumber: true,
         ),
         const SizedBox(height: 10),
         MyTextfield(
-          hintText: "Başlangıç Bakiyesi (TRY)",
+          labelText: "Başlangıç Bakiyesi (TRY)",
+          isNumber: true,
           obscureText: false,
           controller: tryBalanceController,
         ),
         const SizedBox(height: 10),
         MyTextfield(
-          hintText: "Başlangıç Bakiyesi (PLN)",
+          isNumber: true,
+          labelText: "Başlangıç Bakiyesi (PLN)",
           obscureText: false,
           controller: plnBalanceController,
         ),
@@ -241,7 +254,6 @@ class _RegisterPageState extends State<RegisterPage> {
         'Surname': surnameController.text,
         'ErasmusStartDate': erasmusStartDate,
         'ErasmusEndDate': erasmusEndDate,
-        'ErasmusRemainingDuration':erasmusEndDate!.difference(DateTime.now()).inDays,
         'InitialBalance': {
           'EUR': double.tryParse(eurBalanceController.text) ?? 0.0,
           'TRY': double.tryParse(tryBalanceController.text) ?? 0.0,

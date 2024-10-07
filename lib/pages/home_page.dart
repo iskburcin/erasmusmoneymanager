@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../auth/login_or_register.dart';
 import '../models/user_data.dart';
 import '../system/exchange_rate_services.dart';
+import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,15 +16,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   String selectedCurrency = 'EUR'; // Default currency
-  String lastUpdated = 'Fetching...';
-  String nextUpdate = '';
+  String lastUpdated = 'Fetching..............';
+  String nextUpdate = 'Calculating............';
   Timer? updateTimer;
 
   @override
   void initState() {
     super.initState();
+    Provider.of<UserData>(context, listen: false).listenToAuthChanges();
     loadUserData();
     initializeUpdateSchedule();
   }
@@ -170,9 +172,16 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 16),
                   buildSpendableCards(userData),
                   const SizedBox(height: 16),
-                  const Text(
-                    "Döviz Kurları",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Döviz Kurları",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      buildLastUpdatedFooter(),
+                    ],
                   ),
                   const SizedBox(
                     height: 16,
@@ -182,7 +191,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          buildLastUpdatedFooter(),
         ],
       ),
       appBar: AppBar(
@@ -192,8 +200,12 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              Navigator.pop(context);
-              await _auth.signOut();
+              await signOut(context);
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                    builder: (context) => const LoginOrRegister()),
+              );
+              // Navigator.pop(context);
             },
           ),
         ],
@@ -291,11 +303,11 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              'Last Updated: $lastUpdated',
+              'Last Updated: ${lastUpdated.substring(0, 16)}',
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
             Text(
-              'Next Update: $nextUpdate',
+              'Next Update: ${nextUpdate.substring(0, 16)}',
               style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ],
@@ -343,4 +355,11 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+  Future<void> signOut(BuildContext context) async {
+  await FirebaseAuth.instance.signOut();
+  
+  // Kullanıcı çıkış yaptıktan sonra userData verisini sıfırla
+  Provider.of<UserData>(context, listen: false).clearData();
+}
+
 }

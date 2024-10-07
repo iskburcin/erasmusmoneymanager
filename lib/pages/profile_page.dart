@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:erasmusmoneymanager/utils/edit_textfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-import '../models/user_data.dart';
 import '../utils/profile_detailed_row.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -25,6 +24,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController surnameController = TextEditingController();
+  final TextEditingController eurController = TextEditingController();
+  final TextEditingController plnController = TextEditingController();
+  final TextEditingController tryController = TextEditingController();
   // Erasmus duration fields
   DateTimeRange? selectedDateRange;
   String? erasmusStartDate;
@@ -39,6 +41,12 @@ class _ProfilePageState extends State<ProfilePage> {
       surnameController.text = user?['Surname'] ?? '';
       erasmusStartDate = user?['ErasmusStartDate'] ?? '';
       erasmusEndDate = user?['ErasmusEndDate'] ?? '';
+      eurController.text =
+          double.parse(user?['InitialBalance']['EUR'].toStringAsFixed(2)).toString();
+      plnController.text =
+          double.parse(user?['InitialBalance']['PLN'].toStringAsFixed(2)).toString();
+      tryController.text =
+          double.parse(user?['InitialBalance']['TRY'].toStringAsFixed(2)).toString();
     });
     print(duration);
   }
@@ -53,6 +61,11 @@ class _ProfilePageState extends State<ProfilePage> {
         'Surname': surnameController.text,
         'ErasmusStartDate': erasmusStartDate,
         'ErasmusEndDate': erasmusEndDate,
+        'InitialBalance': {
+          'EUR': double.parse(eurController.text).toStringAsFixed(2),
+          'TRY': double.parse(tryController.text).toStringAsFixed(2),
+          'PLN': double.parse(plnController.text).toStringAsFixed(2),
+        },
       });
       setState(() {
         isEditing = false;
@@ -116,10 +129,10 @@ class _ProfilePageState extends State<ProfilePage> {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        CircleAvatar(
+        const CircleAvatar(
           radius: 64,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: const Icon(Icons.person, size: 64, color: Colors.white),
+          backgroundColor: Colors.blueGrey,
+          child: Icon(Icons.person, size: 64, color: Colors.white),
         ),
         const SizedBox(height: 5),
         Text(
@@ -155,7 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            VerticalDivider(
+            const VerticalDivider(
               thickness: 2,
             ),
             Expanded(
@@ -173,16 +186,16 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
-        Divider(),
+        const Divider(),
         ProfileDetailRow(
             label: "Mevcut EUR Hesap Bakiyem",
-            numvalue: user?['InitialBalance']['EUR']),
+            value: user?['InitialBalance']['EUR'].toString()),
         ProfileDetailRow(
             label: "Mevcut PLN Hesap Bakiyem",
-            numvalue: user?['InitialBalance']['PLN']),
+            value: user?['InitialBalance']['PLN'].toString()),
         ProfileDetailRow(
             label: "Mevcut TRY Hesap Bakiyem",
-            numvalue: user?['InitialBalance']['TRY']),
+            value: user?['InitialBalance']['TRY'].toString()),
       ],
     );
   }
@@ -194,27 +207,29 @@ class _ProfilePageState extends State<ProfilePage> {
           child: ListView(
             padding: const EdgeInsets.all(10.0),
             children: [
-              CircleAvatar(
+              const CircleAvatar(
                 radius: 64,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                child: const Icon(Icons.person, size: 64, color: Colors.white),
+                backgroundColor: Colors.blueGrey,
+                child: Icon(Icons.person, size: 64, color: Colors.white),
               ),
+
               const SizedBox(height: 20),
-              TextField(
+              EditTextfield(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Adınız'),
+                hintText: 'Adınız:',
               ),
               const SizedBox(height: 10),
-              TextField(
+              EditTextfield(
                 controller: surnameController,
-                decoration: const InputDecoration(labelText: 'Soyadınız'),
+                hintText: 'Soyadınız:',
               ),
+              const SizedBox(height: 10),
               // Erasmus Duration (Date Range Picker)
               ListTile(
                 title: Text(selectedDateRange == null
                     ? "Erasmus Süresi: ${erasmusStartDate.toString().substring(0, 10)} - ${erasmusEndDate.toString().substring(0, 10)}"
                     : "Erasmus Süresi: ${DateFormat('dd-MM-yyyy').format(selectedDateRange!.start)} - ${DateFormat('dd-MM-yyyy').format(selectedDateRange!.end)}"),
-                trailing: Icon(Icons.calendar_today),
+                trailing: const Icon(Icons.calendar_today),
                 onTap: () async {
                   DateTimeRange? picked = await showDateRangePicker(
                     context: context,
@@ -233,16 +248,37 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 10),
               Text(
                   'Duration of Erasmus: ${DateFormat('yyyy-MM-dd').parse(erasmusEndDate.toString()).difference(DateFormat('yyyy-MM-dd').parse(erasmusStartDate.toString())).inDays}'),
+              const SizedBox(height: 20),
+              EditTextfield(
+                controller: eurController,
+                hintText: 'Mevcut EUR Hesap Bakiye:',
+              ),
+              const SizedBox(height: 10),
+              EditTextfield(
+                controller: plnController,
+                hintText: 'Mevcut PLN Hesap Bakiye:',
+              ),
+              const SizedBox(height: 10),
+              EditTextfield(
+                controller: tryController,
+                hintText: 'Mevcut TRY Hesap Bakiye:',
+              ),
               const SizedBox(height: 10),
 
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: saveProfile,
-                icon: const Icon(Icons.save),
-                label: const Text("Kaydet"),
+                icon: const Icon(
+                  Icons.save,
+                ),
+                label: const Text(
+                  "Kaydet",
+                  style:
+                      TextStyle(color: Color.fromARGB(255, 61, 13, 9), fontWeight: FontWeight.bold,fontSize: 18),
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                  iconColor: Theme.of(context).colorScheme.primary,
+                  backgroundColor: Colors.blueGrey,
+                  iconColor: Colors.red,
                 ),
               ),
             ],
