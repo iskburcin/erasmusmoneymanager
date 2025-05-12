@@ -1,5 +1,9 @@
 # Erasmus Student Money Management App
 
+
+https://github.com/user-attachments/assets/fa26e5c8-dc5c-43cb-b4f4-97aa759a5495
+
+
 ### Aim of the App:
 The app helps Erasmus students manage their finances in multiple currencies. It provides a way for students to input their balances, track income and expenses, and convert everything into a base currency using real-time exchange rates. This gives students an accurate overview of their spendable money, helping them manage their budget effectively during their Erasmus period.
 
